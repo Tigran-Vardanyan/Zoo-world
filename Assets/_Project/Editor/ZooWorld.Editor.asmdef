@@ -1,0 +1,26 @@
+{
+    "name": "ZooWorld.Editor",
+    "rootNamespace": "ZooWorld.Editor",
+    "references": [
+        "ZooWorld.Animals",
+        "ZooWorld.Installers",
+        "ZooWorld.Spawning",
+        "ZooWorld.Statistics",
+        "ZooWorld.Utils",
+        "ZooWorld.World",
+        "VContainer",
+        "UnityEditor.TestRunner",
+        "UnityEngine.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

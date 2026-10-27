@@ -1,0 +1,19 @@
+{
+    "name": "ZooWorld.Spawning",
+    "rootNamespace": "ZooWorld.Spawning",
+    "references": [
+        "ZooWorld.Animals",
+        "ZooWorld.World",
+        "ZooWorld.Utils",
+        "VContainer"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,22 @@
+{
+    "name": "ZooWorld.Installers",
+    "rootNamespace": "ZooWorld.Installers",
+    "references": [
+        "ZooWorld.Animals",
+        "ZooWorld.FoodChain",
+        "ZooWorld.Spawning",
+        "ZooWorld.Statistics",
+        "ZooWorld.UI",
+        "ZooWorld.World",
+        "VContainer"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

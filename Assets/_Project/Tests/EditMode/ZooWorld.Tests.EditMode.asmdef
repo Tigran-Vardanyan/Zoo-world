@@ -1,0 +1,29 @@
+{
+    "name": "ZooWorld.Tests.EditMode",
+    "rootNamespace": "ZooWorld.Tests",
+    "references": [
+        "ZooWorld.Animals",
+        "ZooWorld.FoodChain",
+        "ZooWorld.Spawning",
+        "ZooWorld.Statistics",
+        "ZooWorld.Utils",
+        "ZooWorld.World",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

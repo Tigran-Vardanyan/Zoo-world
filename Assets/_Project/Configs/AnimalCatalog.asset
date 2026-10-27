@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae87d25f896dd7141b0dfa94c4360a18, type: 3}
+  m_Name: AnimalCatalog
+  m_EditorClassIdentifier: ZooWorld::ZooWorld.Spawning.AnimalCatalog
+  _entries:
+  - _prefab: {fileID: 9059384967429762863, guid: de77a9a4aee3f8d4e99e482124c43e5c, type: 3}
+    _weight: 2
+  - _prefab: {fileID: 5673057425820895275, guid: 041b6213cea67c947beb0ab29c31df9c, type: 3}
+    _weight: 1

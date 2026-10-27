@@ -1,0 +1,17 @@
+{
+    "name": "ZooWorld.Statistics",
+    "rootNamespace": "ZooWorld.Statistics",
+    "references": [
+        "ZooWorld.Animals",
+        "VContainer"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

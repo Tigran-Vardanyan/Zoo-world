@@ -1,0 +1,17 @@
+{
+    "name": "ZooWorld.FoodChain",
+    "rootNamespace": "ZooWorld.FoodChain",
+    "references": [
+        "ZooWorld.Animals",
+        "ZooWorld.Utils"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
