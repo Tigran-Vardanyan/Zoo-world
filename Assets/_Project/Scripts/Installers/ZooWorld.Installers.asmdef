@@ -3,6 +3,8 @@
     "rootNamespace": "ZooWorld.Installers",
     "references": [
         "ZooWorld.Animals",
+        "ZooWorld.Cameras",
+        "ZooWorld.Controls",
         "ZooWorld.FoodChain",
         "ZooWorld.Spawning",
         "ZooWorld.Statistics",

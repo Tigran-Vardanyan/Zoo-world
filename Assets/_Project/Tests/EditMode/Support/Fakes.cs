@@ -8,6 +8,7 @@ namespace ZooWorld.Tests.Support
 {
     internal sealed class FakePlayArea : IPlayArea
     {
+        public Rect Bounds => Rect.MinMaxRect(-100f, -100f, 100f, 100f);
         public bool Contains(Vector3 position) => true;
         public Vector3 GetRandomPoint(float inset = 0f) => Vector3.zero;
         public Vector3 RedirectInside(Vector3 position, Vector3 direction) => direction;

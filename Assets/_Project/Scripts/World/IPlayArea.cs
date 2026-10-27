@@ -7,6 +7,9 @@ namespace ZooWorld.World
     /// </summary>
     public interface IPlayArea
     {
+        /// <summary>The area on the ground plane: x = world X, y = world Z.</summary>
+        Rect Bounds { get; }
+
         bool Contains(Vector3 position);
 
         /// <summary>Random ground point at least <paramref name="inset"/> away from the area's edges.</summary>

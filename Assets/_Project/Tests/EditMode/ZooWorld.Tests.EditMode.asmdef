@@ -3,6 +3,7 @@
     "rootNamespace": "ZooWorld.Tests",
     "references": [
         "ZooWorld.Animals",
+        "ZooWorld.Controls",
         "ZooWorld.FoodChain",
         "ZooWorld.Spawning",
         "ZooWorld.Statistics",

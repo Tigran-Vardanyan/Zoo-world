@@ -4,7 +4,8 @@ namespace ZooWorld.World
 {
     /// <summary>
     /// Play area equal to the part of the ground plane visible through the camera.
-    /// The rectangle is recalculated lazily whenever the screen size changes.
+    /// The rectangle is recalculated lazily whenever the screen size or the camera's viewport changes
+    /// (e.g. when a UI panel reserves part of the screen).
     /// </summary>
     /// <remarks>
     /// Assumes a top-down camera looking roughly along -Y with screen-up pointing to +Z.
@@ -17,6 +18,7 @@ namespace ZooWorld.World
 
         private Rect _bounds;
         private Vector2Int _cachedScreenSize;
+        private Rect _cachedViewport;
 
         public CameraPlayArea(Camera camera, PlayAreaSettings settings)
         {
@@ -24,14 +26,16 @@ namespace ZooWorld.World
             _settings = settings;
         }
 
-        private Rect Bounds
+        public Rect Bounds
         {
             get
             {
                 var screenSize = new Vector2Int(Screen.width, Screen.height);
-                if (screenSize != _cachedScreenSize)
+                var viewport = _camera.rect;
+                if (screenSize != _cachedScreenSize || viewport != _cachedViewport)
                 {
                     _cachedScreenSize = screenSize;
+                    _cachedViewport = viewport;
                     _bounds = CalculateBounds();
                 }
 

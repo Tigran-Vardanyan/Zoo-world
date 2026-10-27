@@ -3,9 +3,12 @@
     "rootNamespace": "ZooWorld.UI",
     "references": [
         "ZooWorld.Animals",
+        "ZooWorld.Cameras",
+        "ZooWorld.Controls",
         "ZooWorld.Statistics",
         "VContainer",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

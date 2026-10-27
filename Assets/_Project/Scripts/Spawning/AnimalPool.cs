@@ -10,7 +10,7 @@ namespace ZooWorld.Spawning
 {
     /// <summary>
     /// One object pool per animal prefab. Instances are created through the container,
-    /// so their [Inject] members are filled in, and are returned to their pool when they die.
+    /// so their [Inject] members are filled in, and are returned to their pool when their corpse is despawned.
     /// </summary>
     public sealed class AnimalPool : IAnimalPool, IDisposable
     {
@@ -62,7 +62,7 @@ namespace ZooWorld.Spawning
         {
             var animal = _resolver.Instantiate(prefab, _root);
             animal.gameObject.SetActive(false);
-            animal.Died += Release;
+            animal.Despawned += Release;
             _poolsByInstance.Add(animal, pool);
             return animal;
         }
@@ -77,7 +77,7 @@ namespace ZooWorld.Spawning
             _poolsByInstance.Remove(animal);
             if (animal != null)
             {
-                animal.Died -= Release;
+                animal.Despawned -= Release;
                 UnityEngine.Object.Destroy(animal.gameObject);
             }
         }

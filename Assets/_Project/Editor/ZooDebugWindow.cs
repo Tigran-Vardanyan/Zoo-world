@@ -3,24 +3,23 @@ using UnityEditor;
 using UnityEngine;
 using VContainer;
 using ZooWorld.Animals;
+using ZooWorld.Controls;
 using ZooWorld.Installers;
-using ZooWorld.Spawning;
 using ZooWorld.Statistics;
-using ZooWorld.Utils;
-using ZooWorld.World;
 
 namespace ZooWorld.Editor
 {
     /// <summary>
     /// Play mode tool for testing the zoo by hand: spawn specific animals, force encounters,
-    /// rebuild obstacles, kill animals and watch live checks. Talks to the game only through its services.
+    /// rebuild obstacles, kill animals and watch live checks. Uses the same <see cref="IZooCommands"/>
+    /// as the in-game control panel, plus an exact off-screen check that is too costly for a build.
     /// </summary>
     public sealed class ZooDebugWindow : EditorWindow
     {
         private const float RepaintInterval = 0.25f;
-        private const float SpawnClearance = 1.2f;
-        private const float EncounterGap = 2f;
-        private const float EncounterPush = 4f;
+
+        private static Mesh _bakedMesh;
+        private static Mesh BakedMesh => _bakedMesh != null ? _bakedMesh : _bakedMesh = new Mesh { hideFlags = HideFlags.HideAndDontSave };
 
         private int _firstSpecies;
         private int _secondSpecies = 1;
@@ -71,10 +70,16 @@ namespace ZooWorld.Editor
             }
 
             var game = new Game(scope.Container);
+            if (game.Commands.Species.Count == 0)
+            {
+                EditorGUILayout.HelpBox("The animal catalog is empty.", MessageType.Warning);
+                return;
+            }
+
             _scroll = EditorGUILayout.BeginScrollView(_scroll);
-            DrawSpawning(game);
-            DrawEncounter(game);
-            DrawWorld(game);
+            DrawSpawning(game.Commands);
+            DrawEncounter(game.Commands);
+            DrawWorld(game.Commands);
             DrawChecks(game);
             EditorGUILayout.EndScrollView();
 
@@ -84,19 +89,19 @@ namespace ZooWorld.Editor
             }
         }
 
-        private void DrawSpawning(Game game)
+        private void DrawSpawning(IZooCommands commands)
         {
             Header("Spawning");
-            game.Spawner.IsPaused = EditorGUILayout.Toggle("Pause auto spawning", game.Spawner.IsPaused);
-            Time.timeScale = EditorGUILayout.Slider("Time scale", Time.timeScale, 0f, 5f);
+            commands.IsSpawningPaused = EditorGUILayout.Toggle("Pause auto spawning", commands.IsSpawningPaused);
+            commands.TimeScale = EditorGUILayout.Slider("Time scale", commands.TimeScale, 0f, 5f);
 
             using (new EditorGUILayout.HorizontalScope())
             {
-                foreach (var entry in game.Catalog.Entries.Where(entry => entry.Prefab != null))
+                foreach (var species in commands.Species)
                 {
-                    if (GUILayout.Button($"Spawn {entry.Prefab.Config.DisplayName}"))
+                    if (GUILayout.Button($"Spawn {species.Config.DisplayName}"))
                     {
-                        SpawnAtFreeSpot(game, entry.Prefab);
+                        _message = commands.Spawn(species) != null ? $"Spawned a {species.Config.DisplayName}." : "No free spot found.";
                     }
                 }
             }
@@ -106,28 +111,15 @@ namespace ZooWorld.Editor
                 _batchSize = EditorGUILayout.IntSlider(_batchSize, 1, 30);
                 if (GUILayout.Button("Spawn random batch", GUILayout.Width(140f)))
                 {
-                    var spawned = 0;
-                    for (var i = 0; i < _batchSize; i++)
-                    {
-                        spawned += SpawnAtFreeSpot(game, game.Catalog.PickRandom()) ? 1 : 0;
-                    }
-
-                    _message = $"Spawned {spawned} of {_batchSize} (others found no free spot).";
+                    _message = $"Spawned {commands.SpawnRandom(_batchSize)} of {_batchSize} (others found no free spot).";
                 }
             }
         }
 
-        private void DrawEncounter(Game game)
+        private void DrawEncounter(IZooCommands commands)
         {
             Header("Force an encounter");
-            var prefabs = game.Catalog.Entries.Select(entry => entry.Prefab).Where(prefab => prefab != null).ToArray();
-            if (prefabs.Length == 0)
-            {
-                EditorGUILayout.HelpBox("The animal catalog is empty.", MessageType.Warning);
-                return;
-            }
-
-            var names = prefabs.Select(prefab => prefab.Config.DisplayName).ToArray();
+            var names = commands.Species.Select(species => species.Config.DisplayName).ToArray();
             using (new EditorGUILayout.HorizontalScope())
             {
                 _firstSpecies = Mathf.Clamp(EditorGUILayout.Popup(_firstSpecies, names), 0, names.Length - 1);
@@ -135,44 +127,37 @@ namespace ZooWorld.Editor
                 _secondSpecies = Mathf.Clamp(EditorGUILayout.Popup(_secondSpecies, names), 0, names.Length - 1);
             }
 
-            EditorGUILayout.LabelField(DescribeExpectedOutcome(prefabs[_firstSpecies].Config, prefabs[_secondSpecies].Config), EditorStyles.miniLabel);
+            var first = commands.Species[_firstSpecies];
+            var second = commands.Species[_secondSpecies];
+            EditorGUILayout.LabelField("Expected: " + EncounterForecast.Describe(first.Config, second.Config), EditorStyles.miniLabel);
             if (GUILayout.Button("Spawn both and push them together"))
             {
-                ForceEncounter(game, prefabs[_firstSpecies], prefabs[_secondSpecies]);
+                _message = commands.ForceEncounter(first, second)
+                    ? $"{first.Config.DisplayName} and {second.Config.DisplayName} pushed together."
+                    : "No free spot big enough for an encounter.";
             }
         }
 
-        private void DrawWorld(Game game)
+        private void DrawWorld(IZooCommands commands)
         {
             Header("World");
             using (new EditorGUILayout.HorizontalScope())
             {
                 if (GUILayout.Button("Rebuild obstacles"))
                 {
-                    game.Obstacles.Rebuild();
-                    _message = $"Placed {game.Obstacles.Placed.Count} obstacles.";
+                    commands.RebuildObstacles();
+                    _message = $"Placed {commands.ObstacleCount} obstacles.";
                 }
 
                 if (GUILayout.Button("Kill random animal"))
                 {
-                    var alive = game.Registry.Alive.ToArray();
-                    if (alive.Length > 0)
-                    {
-                        var victim = alive[Random.Range(0, alive.Length)];
-                        _message = $"Killed a {victim.Config.DisplayName}.";
-                        victim.Die();
-                    }
+                    var victim = commands.KillRandom();
+                    _message = victim != null ? $"Killed a {victim.Config.DisplayName}." : "Nobody to kill.";
                 }
 
                 if (GUILayout.Button("Kill all"))
                 {
-                    var alive = game.Registry.Alive.ToArray();
-                    foreach (var animal in alive)
-                    {
-                        animal.Die();
-                    }
-
-                    _message = $"Killed {alive.Length} animals.";
+                    _message = $"Killed {commands.KillAll()} animals.";
                 }
             }
         }
@@ -190,73 +175,43 @@ namespace ZooWorld.Editor
             }
 
             EditorGUILayout.LabelField("Dead prey / predators", $"{game.Statistics.DeadPrey} / {game.Statistics.DeadPredators}");
-            EditorGUILayout.LabelField("Obstacles", game.Obstacles.Placed.Count.ToString());
+            EditorGUILayout.LabelField("Obstacles", game.Commands.ObstacleCount.ToString());
 
             var style = new GUIStyle(EditorStyles.boldLabel) { normal = { textColor = outside == 0 ? new Color(0.3f, 0.8f, 0.3f) : Color.red } };
             EditorGUILayout.LabelField("Animals partly off screen", outside.ToString(), style);
         }
 
-        private bool SpawnAtFreeSpot(Game game, Animal prefab)
+        private static bool IsFullyOnScreen(Camera camera, Animal animal)
         {
-            if (prefab == null || !game.FreeSpots.TryFind(SpawnClearance, out var point))
+            foreach (var renderer in animal.GetComponentsInChildren<Renderer>())
             {
-                _message = "No free spot found.";
-                return false;
+                if (renderer is SkinnedMeshRenderer skinned)
+                {
+                    // Skinned bounds are much larger than the posed mesh, so check the actual deformed vertices.
+                    skinned.BakeMesh(BakedMesh, true);
+                    var toWorld = skinned.transform.localToWorldMatrix;
+                    foreach (var vertex in BakedMesh.vertices)
+                    {
+                        if (!IsInViewport(camera, toWorld.MultiplyPoint3x4(vertex)))
+                        {
+                            return false;
+                        }
+                    }
+                }
+                else if (renderer is MeshRenderer
+                         && (!IsInViewport(camera, renderer.bounds.min) || !IsInViewport(camera, renderer.bounds.max)))
+                {
+                    return false;
+                }
             }
 
-            game.Spawner.Spawn(prefab, point, GroundDirection.Random());
-            _message = $"Spawned a {prefab.Config.DisplayName}.";
             return true;
         }
 
-        private void ForceEncounter(Game game, Animal first, Animal second)
+        private static bool IsInViewport(Camera camera, Vector3 worldPoint)
         {
-            if (!game.FreeSpots.TryFind(EncounterGap + SpawnClearance, out var center))
-            {
-                _message = "No free spot big enough for an encounter.";
-                return;
-            }
-
-            var axis = GroundDirection.Random();
-            var a = game.Spawner.Spawn(first, center - axis * (EncounterGap * 0.5f), axis);
-            var b = game.Spawner.Spawn(second, center + axis * (EncounterGap * 0.5f), -axis);
-            a.Push(axis * EncounterPush);
-            b.Push(-axis * EncounterPush);
-
-            Selection.objects = new Object[] { a.gameObject, b.gameObject };
-            _message = $"{first.Config.DisplayName} and {second.Config.DisplayName} pushed together (selected in the Hierarchy).";
-        }
-
-        private static string DescribeExpectedOutcome(AnimalConfig first, AnimalConfig second)
-        {
-            var firstEats = first.CanEat(second);
-            var secondEats = second.CanEat(first);
-            if (firstEats && secondEats)
-            {
-                return "Expected: duel, one random survivor says \"Tasty!\".";
-            }
-
-            if (firstEats || secondEats)
-            {
-                var predator = firstEats ? first : second;
-                var prey = firstEats ? second : first;
-                return $"Expected: the {predator.DisplayName} eats the {prey.DisplayName}.";
-            }
-
-            return "Expected: they bounce apart, both survive.";
-        }
-
-        private static bool IsFullyOnScreen(Camera camera, Animal animal)
-        {
-            var bounds = new Bounds(animal.transform.position, Vector3.zero);
-            foreach (var renderer in animal.GetComponentsInChildren<MeshRenderer>())
-            {
-                bounds.Encapsulate(renderer.bounds);
-            }
-
-            var min = camera.WorldToViewportPoint(bounds.min);
-            var max = camera.WorldToViewportPoint(bounds.max);
-            return min.x >= 0f && min.y >= 0f && max.x <= 1f && max.y <= 1f;
+            var viewport = camera.WorldToViewportPoint(worldPoint);
+            return viewport.x >= 0f && viewport.y >= 0f && viewport.x <= 1f && viewport.y <= 1f;
         }
 
         private static void Header(string title)
@@ -270,21 +225,15 @@ namespace ZooWorld.Editor
         {
             public Game(IObjectResolver container)
             {
-                Catalog = container.Resolve<AnimalCatalog>();
-                Spawner = container.Resolve<IAnimalSpawner>();
+                Commands = container.Resolve<IZooCommands>();
                 Registry = container.Resolve<IAnimalRegistry>();
-                FreeSpots = container.Resolve<IFreeSpotFinder>();
                 Statistics = container.Resolve<IDeathStatistics>();
-                Obstacles = container.Resolve<ObstacleSpawner>();
                 Camera = container.Resolve<Camera>();
             }
 
-            public AnimalCatalog Catalog { get; }
-            public IAnimalSpawner Spawner { get; }
+            public IZooCommands Commands { get; }
             public IAnimalRegistry Registry { get; }
-            public IFreeSpotFinder FreeSpots { get; }
             public IDeathStatistics Statistics { get; }
-            public ObstacleSpawner Obstacles { get; }
             public Camera Camera { get; }
         }
     }

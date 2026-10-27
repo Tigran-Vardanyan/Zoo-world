@@ -92,6 +92,7 @@ namespace ZooWorld.Tests.World
         {
             public Queue<Vector3> Points { get; } = new();
 
+            public Rect Bounds => Rect.MinMaxRect(-100f, -100f, 100f, 100f);
             public bool Contains(Vector3 position) => true;
             public Vector3 GetRandomPoint(float inset = 0f) => Points.Count > 1 ? Points.Dequeue() : Points.Peek();
             public Vector3 RedirectInside(Vector3 position, Vector3 direction) => direction;

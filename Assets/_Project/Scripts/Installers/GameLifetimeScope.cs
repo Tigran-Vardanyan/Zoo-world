@@ -2,6 +2,8 @@ using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 using ZooWorld.Animals;
+using ZooWorld.Cameras;
+using ZooWorld.Controls;
 using ZooWorld.FoodChain;
 using ZooWorld.Spawning;
 using ZooWorld.Statistics;
@@ -17,7 +19,9 @@ namespace ZooWorld.Installers
     public sealed class GameLifetimeScope : LifetimeScope
     {
         [Header("Scene")]
+        [Tooltip("Fixed top-down camera; its view defines the play area.")]
         [SerializeField] private Camera _camera;
+        [SerializeField] private FreeCameraController _freeCamera;
         [SerializeField] private Transform _animalsRoot;
         [SerializeField] private Transform _obstaclesRoot;
 
@@ -31,20 +35,27 @@ namespace ZooWorld.Installers
         [SerializeField] private ObstacleSettings _obstacleSettings = new();
         [SerializeField] private FoodChainSettings _foodChainSettings = new();
 
+        [Header("Controls")]
+        [SerializeField] private PickerSettings _pickerSettings = new();
+
         [Header("UI")]
         [SerializeField] private DeathCounterView _deathCounterView;
+        [SerializeField] private ControlPanelView _controlPanelView;
 
         protected override void Configure(IContainerBuilder builder)
         {
             RegisterWorld(builder);
             RegisterFoodChain(builder);
             RegisterSpawning(builder);
+            RegisterControls(builder);
             RegisterUI(builder);
         }
 
         private void RegisterWorld(IContainerBuilder builder)
         {
             builder.RegisterComponent(_camera);
+            builder.RegisterComponent(_freeCamera);
+            builder.Register<CameraSwitcher>(Lifetime.Singleton).AsImplementedInterfaces();
             builder.RegisterInstance(_playAreaSettings);
             builder.Register<IPlayArea, CameraPlayArea>(Lifetime.Singleton);
             builder.RegisterInstance(_freeSpotSettings);
@@ -74,11 +85,22 @@ namespace ZooWorld.Installers
             builder.RegisterEntryPoint<AnimalSpawner>().As<IAnimalSpawner>();
         }
 
+        private void RegisterControls(IContainerBuilder builder)
+        {
+            builder.RegisterInstance(_pickerSettings);
+            builder.Register<IAnimalPicker, CameraAnimalPicker>(Lifetime.Singleton);
+            builder.Register<ZooCommands>(Lifetime.Singleton).AsImplementedInterfaces();
+        }
+
         private void RegisterUI(IContainerBuilder builder)
         {
             builder.RegisterEntryPoint<DeathStatistics>().As<IDeathStatistics>();
             builder.RegisterComponent(_deathCounterView);
             builder.RegisterEntryPoint<DeathCounterPresenter>();
+
+            builder.RegisterComponent(_controlPanelView);
+            builder.RegisterEntryPoint<KillOnClickInput>().AsSelf();
+            builder.RegisterEntryPoint<ControlPanelPresenter>();
         }
     }
 }

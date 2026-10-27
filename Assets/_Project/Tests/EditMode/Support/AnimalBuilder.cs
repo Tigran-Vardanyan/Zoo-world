@@ -59,6 +59,7 @@ namespace ZooWorld.Tests.Support
             gameObject.SetActive(false);
             var body = gameObject.AddComponent<Rigidbody>();
             body.useGravity = false;
+            gameObject.AddComponent<SphereCollider>();
             var movement = gameObject.AddComponent<LinearMovement>();
             var animal = gameObject.AddComponent<Animal>();
 

@@ -3,6 +3,7 @@
     "rootNamespace": "ZooWorld.Editor",
     "references": [
         "ZooWorld.Animals",
+        "ZooWorld.Controls",
         "ZooWorld.Installers",
         "ZooWorld.Spawning",
         "ZooWorld.Statistics",

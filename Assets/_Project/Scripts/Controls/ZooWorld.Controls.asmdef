@@ -1,0 +1,19 @@
+{
+    "name": "ZooWorld.Controls",
+    "rootNamespace": "ZooWorld.Controls",
+    "references": [
+        "ZooWorld.Animals",
+        "ZooWorld.Spawning",
+        "ZooWorld.Utils",
+        "ZooWorld.World"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

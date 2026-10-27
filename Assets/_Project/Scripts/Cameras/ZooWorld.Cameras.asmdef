@@ -1,0 +1,19 @@
+{
+    "name": "ZooWorld.Cameras",
+    "rootNamespace": "ZooWorld.Cameras",
+    "references": [
+        "ZooWorld.World",
+        "VContainer",
+        "Unity.InputSystem",
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
